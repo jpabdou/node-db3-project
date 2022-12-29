@@ -1,3 +1,6 @@
+const Schemes = require('./scheme-model.js')
+const db = require("../../data/db-config")
+
 /*
   If `scheme_id` does not exist in the database:
 
@@ -6,7 +9,15 @@
     "message": "scheme with scheme_id <actual id> not found"
   }
 */
-const checkSchemeId = (req, res, next) => {
+const checkSchemeId = async (req, res, next) => {
+  const {scheme_id} = req.params
+  const result = await Schemes.findById(scheme_id)
+  if (result) {
+    next()
+  } else {
+    next({status: 404, message: `scheme with scheme_id ${scheme_id} not found`})
+  }
+  
 
 }
 
@@ -18,7 +29,22 @@ const checkSchemeId = (req, res, next) => {
     "message": "invalid scheme_name"
   }
 */
-const validateScheme = (req, res, next) => {
+const validateScheme = async (req, res, next) => {
+  const {scheme_name} = req.body;
+
+  if (scheme_name && typeof scheme_name === "string" && scheme_name.trim().length) {
+    const search = await db("schemes").where("scheme_name", scheme_name).first()
+    if (!search) {
+      next()
+    } else{ 
+      next({status: 400, message: "scheme_name taken"})
+
+    }
+  } else {
+    next({status: 400, message: "invalid scheme_name"});
+
+  }
+  
 
 }
 
@@ -32,6 +58,16 @@ const validateScheme = (req, res, next) => {
   }
 */
 const validateStep = (req, res, next) => {
+  const {instructions, step_number} = req.body;
+  if (instructions && step_number && typeof step_number=== "number" && typeof instructions === "string" && step_number >= 1 && instructions.trim().length) {
+    next()
+  } else {
+    next({status: 400, message: "invalid step"});
+
+  }
+
+  
+
 
 }
 
